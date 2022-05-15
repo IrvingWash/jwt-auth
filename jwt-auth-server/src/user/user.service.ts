@@ -9,7 +9,7 @@ import { UserDocument } from './schema/user.schema';
 export class UserService {
 	public constructor(
 		@InjectModel(User.name)
-		private userModel: Model<UserDocument>
+		private _userModel: Model<UserDocument>
 	) {}
 
 	public async users(): Promise<string> {

@@ -9,7 +9,7 @@ import { AuthorizationService } from './authorization.service';
 @Controller('/auth')
 export class AuthorizationController {
 	public constructor(
-		private authorizationService: AuthorizationService
+		private _authorizationService: AuthorizationService
 	) {}
 
 	@Post('sign-up')

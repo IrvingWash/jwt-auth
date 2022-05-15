@@ -1,13 +1,72 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
+import jsonwebtoken from 'jsonwebtoken';
 
 import { Token, TokenDocument } from './schema/token.schema';
 
+interface TokenSet {
+	accessToken: string;
+	refreshToken: string;
+}
+
+interface TokenGeneratorPayload {
+	email: string;
+	id: string;
+}
+
 @Injectable()
 export class TokenService {
+	private _accessSecret = process.env.JWT_ACCESS_SECRET;
+	private _refreshSecret = process.env.JWT_REFRESH_SECRET;
+
 	public constructor(
 		@InjectModel(Token.name)
-		private tokenModel: Model<TokenDocument>,
+		private _tokenModel: Model<TokenDocument>,
 	) {}
+
+	public generateTokens(payload: TokenGeneratorPayload): TokenSet {
+		if (
+			this._accessSecret === undefined ||
+			this._refreshSecret === undefined
+		) {
+			throw new Error('Secret is not provided');
+		}
+
+		const accessToken = jsonwebtoken.sign(
+			payload,
+			this._accessSecret,
+			{ expiresIn: '30m' }
+		);
+
+		const refreshToken = jsonwebtoken.sign(
+			payload,
+			this._refreshSecret,
+			{ expiresIn: '30d' }
+		);
+
+		return {
+			accessToken,
+			refreshToken,
+		};
+	}
+
+	public async saveToken(userId: ObjectId, refreshToken: string): Promise<Token> {
+		const tokenData = await this._tokenModel.findOne({ user: userId });
+
+		if (tokenData !== null) {
+			tokenData.refreshToken = refreshToken;
+
+			await tokenData.save();
+
+			return tokenData;
+		}
+
+		const token = await this._tokenModel.create({
+			user: userId,
+			refreshToken,
+		});
+
+		return token;
+	}
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
 
@@ -9,20 +9,30 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { MailService } from './mail.service';
 import { TokenService } from './token.service';
 
+interface SignUpResult {
+	accessToken: string;
+	refreshToken: string;
+	user: {
+		email: string;
+		id: ObjectId;
+		isActivated: boolean;
+	}
+}
+
 @Injectable()
 export class AuthorizationService {
 	public constructor(
 		@InjectModel(User.name)
-		private userModel: Model<UserDocument>,
+		private _userModel: Model<UserDocument>,
 
-		private mailService: MailService,
-		private tokenService: TokenService,
+		private _mailService: MailService,
+		private _tokenService: TokenService,
 	) {}
 
-	public async signUp(dto: SignUpDto): Promise<User> {
+	public async signUp(dto: SignUpDto): Promise<SignUpResult> {
 		const { email, password } = dto;
 
-		const candidate = await this.userModel.findOne({
+		const candidate = await this._userModel.findOne({
 			email, 
 		});
 
@@ -33,14 +43,30 @@ export class AuthorizationService {
 		const hashedPassword = await bcrypt.hash(password, 'IW');
 		const activationLink = v4();
 
-		const user = await this.userModel.create({
+		const user = await this._userModel.create({
 			email,
 			password: hashedPassword,
 			activationLink,
 		});
 
-		await this.mailService.sendActivationMail(email, activationLink);
+		await this._mailService.sendActivationMail(email, activationLink);
 
-		return user;
+		const tokens = this._tokenService.generateTokens(
+			{
+				email: user.email,
+				id: user._id,
+			}
+		);
+
+		await this._tokenService.saveToken(user._id, tokens.refreshToken);
+
+		return {
+			...tokens,
+			user: {
+				email: user.email,
+				id: user._id,
+				isActivated: user.isActivated,
+			},
+		};
 	}
 }
