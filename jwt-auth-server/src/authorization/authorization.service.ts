@@ -9,7 +9,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { MailService } from './mail.service';
 import { TokenService } from './token.service';
 
-interface SignUpResult {
+export interface SignUpResult {
 	accessToken: string;
 	refreshToken: string;
 	user: {
