@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
 
 import { User, UserDocument } from 'src/user/schema/user.schema';
@@ -40,7 +40,8 @@ export class AuthorizationService {
 			throw new Error('A user with this email already exists');
 		}
 
-		const hashedPassword = await bcrypt.hash(password, 'IW');
+		const salt = await bcrypt.genSalt(5);
+		const hashedPassword = await bcrypt.hash(password, salt);
 		const activationLink = v4();
 
 		const user = await this._userModel.create({

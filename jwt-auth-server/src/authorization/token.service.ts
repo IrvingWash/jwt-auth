@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import jsonwebtoken from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 import { Token, TokenDocument } from './schema/token.schema';
 
@@ -33,13 +33,13 @@ export class TokenService {
 			throw new Error('Secret is not provided');
 		}
 
-		const accessToken = jsonwebtoken.sign(
+		const accessToken = jwt.sign(
 			payload,
 			this._accessSecret,
 			{ expiresIn: '30m' }
 		);
 
-		const refreshToken = jsonwebtoken.sign(
+		const refreshToken = jwt.sign(
 			payload,
 			this._refreshSecret,
 			{ expiresIn: '30d' }
