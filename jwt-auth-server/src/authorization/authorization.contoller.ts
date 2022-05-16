@@ -7,9 +7,11 @@ import {
 	Redirect,
 	Res,
 } from '@nestjs/common';
+
 import { Response } from 'express';
 
-import { AuthorizationService, SignUpResult } from './authorization.service';
+import { AuthorizationService, SigningResult } from './authorization.service';
+import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
 @Controller('/auth')
@@ -25,7 +27,7 @@ export class AuthorizationController {
 
 		@Res({ passthrough: true })
 		response: Response
-	): Promise<SignUpResult> {
+	): Promise<SigningResult> {
 		const signUpResult = await this._authorizationService.signUp(dto);
 
 		response.cookie(
@@ -41,8 +43,25 @@ export class AuthorizationController {
 	}
 
 	@Post('/sign-in')
-	public async signIn(): Promise<void> {
-		return;
+	public async signIn(
+		@Res({ passthrough: true })
+		response: Response,
+
+		@Body()
+		dto: SignInDto
+	): Promise<SigningResult> {
+		const signInResult = await this._authorizationService.signIn({ ...dto });
+
+		response.cookie(
+			'refreshToken',
+			signInResult.refreshToken,
+			{
+				maxAge: 30 * 24 * 60 * 60 * 1000,
+				httpOnly: true,
+			}
+		);
+
+		return signInResult;
 	}
 
 	@Post('/sign-out')

@@ -8,8 +8,9 @@ import { User, UserDocument } from 'src/user/schema/user.schema';
 import { SignUpDto } from './dto/sign-up.dto';
 import { MailService } from './mail.service';
 import { TokenService } from './token.service';
+import { SignInDto } from './dto/sign-in.dto';
 
-export interface SignUpResult {
+export interface SigningResult {
 	accessToken: string;
 	refreshToken: string;
 	user: {
@@ -29,7 +30,7 @@ export class AuthorizationService {
 		private _tokenService: TokenService,
 	) {}
 
-	public async signUp(dto: SignUpDto): Promise<SignUpResult> {
+	public async signUp(dto: SignUpDto): Promise<SigningResult> {
 		const { email, password } = dto;
 
 		const candidate = await this._userModel.findOne({
@@ -58,6 +59,38 @@ export class AuthorizationService {
 				id: user._id,
 			}
 		);
+
+		await this._tokenService.saveToken(user._id, tokens.refreshToken);
+
+		return {
+			...tokens,
+			user: {
+				email: user.email,
+				id: user._id,
+				isActivated: user.isActivated,
+			},
+		};
+	}
+
+	public async signIn(dto: SignInDto): Promise<SigningResult> {
+		const { email, password } = dto;
+
+		const user = await this._userModel.findOne({ email });
+
+		if (user === null) {
+			throw new Error('User not found');
+		}
+
+		const isPassEqual = await bcrypt.compare(password, user.password);
+
+		if (!isPassEqual) {
+			throw new Error('User not found');
+		}
+
+		const tokens = this._tokenService.generateTokens({
+			email: user.email,
+			id: user._id,
+		});
 
 		await this._tokenService.saveToken(user._id, tokens.refreshToken);
 
