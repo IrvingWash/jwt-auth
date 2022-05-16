@@ -12,7 +12,9 @@ export class UserService {
 		private _userModel: Model<UserDocument>
 	) {}
 
-	public async users(): Promise<string> {
-		return 'hello world';
+	public async users(): Promise<User[]> {
+		const users = await this._userModel.find();
+
+		return users;
 	}
 }
