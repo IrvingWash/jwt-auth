@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 config();
+
 const port = process.env.PORT || 3333;
 
 async function bootstrap(): Promise<void> {
