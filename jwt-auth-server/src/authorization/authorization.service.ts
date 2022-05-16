@@ -123,4 +123,36 @@ export class AuthorizationService {
 
 		return token;
 	}
+
+	public async refresh(refreshToken: string): Promise<SigningResult> {
+		if (!refreshToken) {
+			throw new Error('User not authorized');
+		}
+
+		const validation = this._tokenService.validateRefreshToken(refreshToken);
+
+		await this._tokenService.findToken(refreshToken);
+
+		const user = await this._userModel.findById(validation.id);
+
+		if (user === null) {
+			throw new Error('User not found');
+		}
+
+		const tokens = this._tokenService.generateTokens({
+			email: user.email,
+			id: user._id,
+		});
+
+		await this._tokenService.saveToken(user._id, tokens.refreshToken);
+
+		return {
+			...tokens,
+			user: {
+				email: user.email,
+				id: user._id,
+				isActivated: user.isActivated,
+			},
+		};
+	}
 }

@@ -79,4 +79,34 @@ export class TokenService {
 
 		return tokenData?.refreshToken;
 	}
+
+	public validateAccessToken(token: string): string | jwt.JwtPayload {
+		if (this._accessSecret === undefined) {
+			throw new Error('Secret is not provided');
+		}
+
+		const verification = jwt.verify(token, this._accessSecret);
+
+		return verification;
+	}
+
+	public validateRefreshToken(token: string): jwt.JwtPayload {
+		if (this._refreshSecret === undefined) {
+			throw new Error('Secret is not provided');
+		}
+
+		const verification = jwt.verify(token, this._refreshSecret);
+
+		return verification as jwt.JwtPayload;
+	}
+
+	public async findToken(token: string): Promise<Token> {
+		const tokenData = await this._tokenModel.findOne({ token });
+
+		if (tokenData === null) {
+			throw new Error('Token not found');
+		}
+
+		return tokenData;
+	}
 }

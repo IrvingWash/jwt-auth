@@ -15,6 +15,8 @@ import { AuthorizationService, SigningResult } from './authorization.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
+const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
 @Controller('/auth')
 export class AuthorizationController {
 	public constructor(
@@ -35,7 +37,7 @@ export class AuthorizationController {
 			'refreshToken',
 			signUpResult.refreshToken,
 			{
-				maxAge: 30 * 24 * 60 * 60 * 1000,
+				maxAge: thirtyDays,
 				httpOnly: true,
 			}
 		);
@@ -57,7 +59,7 @@ export class AuthorizationController {
 			'refreshToken',
 			signInResult.refreshToken,
 			{
-				maxAge: 30 * 24 * 60 * 60 * 1000,
+				maxAge: thirtyDays,
 				httpOnly: true,
 			}
 		);
@@ -73,7 +75,7 @@ export class AuthorizationController {
 		@Res({ passthrough: true })
 		response: Response
 	): Promise<string> {
-		const refreshToken = request.cookies['refreshToken'];
+		const refreshToken = request.cookies.refreshToken;
 
 		console.log(request.cookies);
 
@@ -96,7 +98,22 @@ export class AuthorizationController {
 	}
 
 	@Get('/refresh')
-	public async refresh(): Promise<void> {
-		return;
+	public async refresh(
+		@Req()
+		request: Request,
+
+		@Res({ passthrough: true })
+		response: Response,
+	): Promise<SigningResult> {
+		const refreshToken = request.cookies.refreshToken;
+
+		const refreshResult = await this._authorizationService.refresh(refreshToken);
+
+		response.cookie('refreshToken', refreshResult.refreshToken, {
+			maxAge: thirtyDays,
+			httpOnly: true,
+		});
+
+		return refreshResult;
 	}
 }
