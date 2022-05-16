@@ -42,7 +42,7 @@ export class AuthorizationService {
 
 		const salt = await bcrypt.genSalt(5);
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const activationLink = v4();
+		const activationLink = `${process.env.API_URL}/activate/${v4()}`;
 
 		const user = await this._userModel.create({
 			email,
