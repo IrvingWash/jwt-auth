@@ -80,14 +80,14 @@ export class TokenService {
 		return tokenData?.refreshToken;
 	}
 
-	public validateAccessToken(token: string): string | jwt.JwtPayload {
+	public validateAccessToken(token: string): jwt.JwtPayload {
 		if (this._accessSecret === undefined) {
 			throw new Error('Secret is not provided');
 		}
 
 		const verification = jwt.verify(token, this._accessSecret);
 
-		return verification;
+		return verification as jwt.JwtPayload;
 	}
 
 	public validateRefreshToken(token: string): jwt.JwtPayload {
