@@ -69,4 +69,14 @@ export class TokenService {
 
 		return token;
 	}
+
+	public async removeToken(refreshToken: string): Promise<string> {
+		const tokenData = await this._tokenModel.findOneAndDelete({ refreshToken });
+
+		if (tokenData === null) {
+			throw new Error('Token not found');
+		}
+
+		return tokenData?.refreshToken;
+	}
 }

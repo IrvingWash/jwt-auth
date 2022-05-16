@@ -117,4 +117,10 @@ export class AuthorizationService {
 
 		return;
 	}
+
+	public async signOut(refreshToken: string): Promise<string> {
+		const token = await this._tokenService.removeToken(refreshToken);
+
+		return token;
+	}
 }

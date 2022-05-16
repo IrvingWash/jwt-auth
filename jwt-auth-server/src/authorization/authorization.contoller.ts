@@ -5,10 +5,11 @@ import {
 	Param,
 	Post,
 	Redirect,
+	Req,
 	Res,
 } from '@nestjs/common';
 
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { AuthorizationService, SigningResult } from './authorization.service';
 import { SignInDto } from './dto/sign-in.dto';
@@ -65,8 +66,22 @@ export class AuthorizationController {
 	}
 
 	@Post('/sign-out')
-	public async signOut(): Promise<void> {
-		return;
+	public async signOut(
+		@Req()
+		request: Request,
+
+		@Res({ passthrough: true })
+		response: Response
+	): Promise<string> {
+		const refreshToken = request.cookies['refreshToken'];
+
+		console.log(request.cookies);
+
+		const token = await this._authorizationService.signOut(refreshToken);
+
+		response.clearCookie('refreshToken');
+
+		return token;
 	}
 
 	@Get('activate/:link')
