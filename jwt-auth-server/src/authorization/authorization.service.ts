@@ -42,7 +42,7 @@ export class AuthorizationService {
 
 		const salt = await bcrypt.genSalt(5);
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const activationLink = `${process.env.API_URL}/activate/${v4()}`;
+		const activationLink = `${process.env.API_URL}/auth/activate/${v4()}`;
 
 		const user = await this._userModel.create({
 			email,
@@ -69,5 +69,19 @@ export class AuthorizationService {
 				isActivated: user.isActivated,
 			},
 		};
+	}
+
+	public async activate(activationLink: string): Promise<void> {
+		const user =  await this._userModel.findOne({ activationLink });
+
+		if (user === null) {
+			throw new Error('Wrong activation link');
+		}
+
+		user.isActivated = true;
+
+		await user.save();
+
+		return;
 	}
 }

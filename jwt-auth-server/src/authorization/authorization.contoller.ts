@@ -2,7 +2,9 @@ import {
 	Body,
 	Controller,
 	Get,
+	Param,
 	Post,
+	Redirect,
 	Res,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -49,8 +51,14 @@ export class AuthorizationController {
 	}
 
 	@Get('activate/:link')
-	public async activate(): Promise<void> {
-		return;
+	@Redirect(process.env.CLIENT_URL, 302)
+	public async activate(
+		@Param('link')
+		link: string
+	): Promise<object> {
+		await this._authorizationService.activate(`${process.env.API_URL}/auth/activate/${link}`);
+
+		return { url: process.env.CLIENT_URL };
 	}
 
 	@Get('/refresh')
