@@ -12,7 +12,10 @@ const port = process.env.PORT || 3333;
 async function bootstrap(): Promise<void> {
 	const app = await NestFactory.create(AppModule);
 	
-	app.enableCors();
+	app.enableCors({
+		credentials: true,
+		origin: process.env.CLIENT_URL,
+	});
 
 	app.use(cookieParser());
 
