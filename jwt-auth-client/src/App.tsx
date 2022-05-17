@@ -31,6 +31,7 @@ function App(): JSX.Element {
 	return (
 		<div className="App">
 			<h1>{ store.isAuth ? store.user?.email : 'Not authorized' }</h1>
+			<h2>{ store.user?.isActivated ? null : 'Account not activated' }</h2>
 			<button onClick={ getUsers }>List users</button>
 			<button onClick={ signOut }>Sign out</button>
 			{ usersContent() }
