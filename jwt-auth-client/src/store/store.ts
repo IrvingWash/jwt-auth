@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
 import { IUser } from '../models/IUser';
-import AuthService from '../services/auth-servoce';
+import AuthService from '../services/auth-service';
 
 export class Store {
 	public user: IUser | null = null;

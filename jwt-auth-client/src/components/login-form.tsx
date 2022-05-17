@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+
+import { Context } from '../';
 
 export function LoginForm(): JSX.Element {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const { store } = useContext(Context);
 
 	return (
 		<div>
@@ -19,8 +22,8 @@ export function LoginForm(): JSX.Element {
 				value={ password }
 				onChange={ handlePasswordInput }
 			/>
-			<button>Sign in</button>
-			<button>Sign up</button>
+			<button onClick={ signIn }>Sign in</button>
+			<button onClick={ signUp }>Sign up</button>
 		</div>
 	);
 
@@ -30,5 +33,13 @@ export function LoginForm(): JSX.Element {
 
 	function handlePasswordInput(event: React.ChangeEvent<HTMLInputElement>): void {
 		setPassword(event.target.value);
+	}
+
+	function signIn(): void {
+		store.signIn(email, password);
+	}
+
+	function signUp(): void {
+		store.signUp(email, password);
 	}
 }
