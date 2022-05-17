@@ -13,6 +13,6 @@ export default class AuthService {
 	}
 
 	public static async logOut(): Promise<void> {
-		api.get<AuthResponse>('auth/log-out');
+		api.post<AuthResponse>('auth/sign-out');
 	}
 }

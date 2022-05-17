@@ -11,12 +11,24 @@ function App(): JSX.Element {
 		store.checkAuth();
 	}, []);
 
+	if (store.isLoading) {
+		return <div>Loading</div>;
+	}
+
+	if (!store.isAuth) {
+		return <LoginForm />;
+	}
+
 	return (
 		<div className="App">
 			<h1>{ store.isAuth ? store.user?.email : 'Not authorized' }</h1>
-			<LoginForm></LoginForm>
+			<button onClick={ signOut }>Sign out</button>
 		</div>
 	);
+
+	function signOut(): void {
+		store.signOut();
+	}
 }
 
 export default observer(App);

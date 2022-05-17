@@ -5,11 +5,11 @@ import { IUser } from '../models/IUser';
 import AuthService from '../services/auth-service';
 import { AuthResponse } from '../models/response/auth-response';
 import { baseUrl } from '../http';
-import { timeStamp } from 'console';
 
 export class Store {
 	public user: IUser | null = null;
 	public isAuth = false;
+	public isLoading = false;
 
 	public constructor() {
 		makeAutoObservable(this);
@@ -47,7 +47,7 @@ export class Store {
 		}
 	}
 
-	public async logOut(): Promise<void> {
+	public async signOut(): Promise<void> {
 		try {
 			await AuthService.logOut();
 
@@ -63,6 +63,8 @@ export class Store {
 	}
 
 	public async checkAuth(): Promise<void> {
+		this._setLoading(true);
+
 		try {
 			const response = await axios.get<AuthResponse>(
 				`${baseUrl}/auth/refresh`,
@@ -78,6 +80,8 @@ export class Store {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			throw new Error(error.response?.data?.message);
+		} finally {
+			this._setLoading(false);
 		}
 	}
 
@@ -87,5 +91,9 @@ export class Store {
 
 	private _setUser(user: IUser | null): void {
 		this.user = user;
+	}
+
+	private _setLoading(value: boolean): void {
+		this.isLoading = value;
 	}
 }
